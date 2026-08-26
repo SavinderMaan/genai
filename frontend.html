@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>FastAPI Add Numbers</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+        }
+        input {
+            padding: 8px;
+            margin: 5px;
+            width: 150px;
+        }
+        button {
+            padding: 10px 20px;
+            margin-top: 10px;
+        }
+        #result {
+            margin-top: 20px;
+            font-size: 20px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>Add Two Numbers (FastAPI Demo)</h2>
+
+    <input id="a" type="number" placeholder="Enter first number">
+    <input id="b" type="number" placeholder="Enter second number">
+    <br>
+    <button onclick="sendRequest()">Calculate Sum</button>
+
+    <p id="result"></p>
+
+    <script>
+        async function sendRequest() {
+            const a = Number(document.getElementById("a").value);
+            const b = Number(document.getElementById("b").value);
+
+            const response = await fetch("http://127.0.0.1:8000/add", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ a, b })
+            });
+
+            const data = await response.json();
+            document.getElementById("result").innerText = "Sum: " + data.sum;
+        }
+    </script>
+
+</body>
+</html>
