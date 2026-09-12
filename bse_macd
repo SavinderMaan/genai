@@ -1,0 +1,82 @@
+import pandas as pd
+from bseindia import equity
+
+def fetch_bse_tcs(period="6M"):
+    """
+    Fetch historical BSE data for TCS.
+    period options: 1M, 3M, 6M, 1Y, 2Y, 5Y
+    """
+    df = equity.historical_stock_data(symbol="TCS", period=period)
+    df.rename(columns={
+        "Date": "date",
+        # "Open": "open",
+        # "High": "high",
+        # "Low": "low",
+        "ClosePrice": "close",
+        # "WAP": "wap",
+        # "No. of Shares": "volume",
+    }, inplace=True)
+
+    df["date"] = pd.to_datetime(df["date"])
+    return df
+
+def compute_macd(df):
+    """
+    Compute MACD (12, 26, 9) manually without pandas_ta
+    """
+
+    # EMA calculations
+    df["EMA12"] = df["close"].ewm(span=12, adjust=False).mean()
+    df["EMA26"] = df["close"].ewm(span=26, adjust=False).mean()
+
+    # MACD Line
+    df["MACD_12_26_9"] = df["EMA12"] - df["EMA26"]
+
+    # Signal Line (9‑period EMA of MACD)
+    df["MACDs_12_26_9"] = df["MACD_12_26_9"].ewm(span=9, adjust=False).mean()
+
+    # Histogram
+    df["MACDh_12_26_9"] = df["MACD_12_26_9"] - df["MACDs_12_26_9"]
+
+    return df
+
+def detect_macd_cross(df):
+    """
+    Detect bullish/bearish MACD crossovers
+    """
+    df["bullish_cross"] = (
+        (df["MACD_12_26_9"] > df["MACDs_12_26_9"]) &
+        (df["MACD_12_26_9"].shift(1) < df["MACDs_12_26_9"].shift(1))
+    )
+
+    df["bearish_cross"] = (
+        (df["MACD_12_26_9"] < df["MACDs_12_26_9"]) &
+        (df["MACD_12_26_9"].shift(1) > df["MACDs_12_26_9"].shift(1))
+    )
+
+    latest = df.iloc[-1]
+
+    if latest["bullish_cross"]:
+        return "Bullish MACD crossover"
+    elif latest["bearish_cross"]:
+        return "Bearish MACD crossover"
+    else:
+        return "No fresh crossover"
+
+def run_macd_scan():
+    df = fetch_bse_tcs(period="6M")
+    df = compute_macd(df)
+    signal = detect_macd_cross(df)
+
+    print("\n=== TCS (BSE) MACD Signal ===")
+    print(signal)
+    print("\nLatest MACD values:")
+    print(df[["date", "MACD_12_26_9", "MACDs_12_26_9", "MACDh_12_26_9"]].tail())
+
+# Run
+df2 = fetch_bse_tcs(period="6M")
+print(df2.head())
+print("\nColumn names in df2:")
+print(df2.columns.tolist())
+
+run_macd_scan()

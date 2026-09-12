@@ -1,0 +1,73 @@
+from nicegui import ui
+import pandas as pd
+import random
+
+# -----------------------------
+# SAMPLE DATA
+# -----------------------------
+def generate_data(n=100):
+    return pd.DataFrame({
+        'ID': range(1, n+1),
+        'Value': [random.randint(10, 100) for _ in range(n)],
+        'Category': [random.choice(['A', 'B', 'C']) for _ in range(n)]
+    })
+
+df = generate_data(100)
+
+# -----------------------------
+# DASHBOARD UI
+# -----------------------------
+ui.page_title("NiceGUI Dashboard")
+
+with ui.header().classes('bg-blue-600 text-white p-4'):
+    ui.label("📊 NiceGUI Dashboard Example").classes('text-2xl font-bold')
+
+with ui.row().classes('w-full p-4'):
+    with ui.card().classes('p-4 w-1/4'):
+        ui.label("Total Rows").classes('text-lg')
+        ui.label(len(df)).classes('text-3xl font-bold')
+
+    with ui.card().classes('p-4 w-1/4'):
+        ui.label("Avg Value").classes('text-lg')
+        ui.label(f"{df['Value'].mean():.2f}").classes('text-3xl font-bold')
+
+    with ui.card().classes('p-4 w-1/4'):
+        ui.label("Category A Count").classes('text-lg')
+        ui.label((df['Category'] == 'A').sum()).classes('text-3xl font-bold')
+
+    with ui.card().classes('p-4 w-1/4'):
+        ui.label("Category B Count").classes('text-lg')
+        ui.label((df['Category'] == 'B').sum()).classes('text-3xl font-bold')
+
+# -----------------------------
+# CHART
+# -----------------------------
+with ui.card().classes('m-4 p-4'):
+    ui.label("Value Distribution Chart").classes('text-xl font-bold')
+    ui.echart({
+        'xAxis': {'type': 'category', 'data': df['ID'].tolist()},
+        'yAxis': {'type': 'value'},
+        'series': [{
+            'data': df['Value'].tolist(),
+            'type': 'line',
+            'smooth': True,
+            'areaStyle': {}
+        }]
+    }).classes('w-full h-64')
+
+# -----------------------------
+# DATA TABLE
+# -----------------------------
+with ui.card().classes('m-4 p-4'):
+    ui.label("Data Table").classes('text-xl font-bold')
+    ui.table(
+        columns=[
+            {'name': 'ID', 'label': 'ID', 'field': 'ID'},
+            {'name': 'Value', 'label': 'Value', 'field': 'Value'},
+            {'name': 'Category', 'label': 'Category', 'field': 'Category'},
+        ],
+        rows=df.to_dict(orient='records'),
+        row_key='ID'
+    ).classes('w-full')
+
+ui.run()
