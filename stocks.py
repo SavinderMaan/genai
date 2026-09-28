@@ -2,7 +2,7 @@ import pandas as pd
 from nselib import capital_market
 
 # Fetch all NSE listed companies
-df = capital_market.equity_list()
+df = capital_market.equity_list()// added this line to fetch the list of companies from NSE using the nselib library
 
 # List all columns in df
 print(df.columns.tolist())
