@@ -23,8 +23,15 @@ def fetch_stock(symbol="TCS", period="5Y"):
 
     return df
 
-df = fetch_stock("TCS", "5Y")
+nse_stocks = pd.read_csv("/Users/savindrasingh/Desktop/codes/genai/stocks_markets/nse_companies_marketcap.csv")
+nse_2026 = nse_stocks['symbol'].dropna().unique()
+nse_data_5y = pd.concat(
+    [fetch_stock(symbol, "5Y") for symbol in nse_2026],
+    ignore_index=True
+)
 
-df.to_csv("TCS_5Y.csv", index=False)
+nse_data_5y.to_csv("nse_data_5y.csv", index=False)
 
-print(df.shape)
+print(nse_data_5y.head(20))
+
+

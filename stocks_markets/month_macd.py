@@ -88,3 +88,4 @@ def daily_history(symbol, period="6M"):
 df=daily_history("TCS", period="6M")
 print(df.head(20))
 
+
